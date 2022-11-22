@@ -1,10 +1,27 @@
 #include "common.h"
 
+#include <sys/syscall.h>
+
 int main() {
     int ret;
     char buffer[BUFFER_SIZE];
     int recv_fd;
 
+#ifdef USE_PIDFD
+    pid_t server_pid;
+    int server_fd;
+    FILE* pidout = fopen("./pidout.txt", "r");
+    fscanf(pidout, "%d,%d", &server_pid, &server_fd);
+    int pidfd = syscall(SYS_pidfd_open, server_pid, 0);
+    printf("parent pid is %d, pidfd is %d\n", server_pid, pidfd);
+    if (pidfd == -1)
+        die("pidfd_open");
+
+    recv_fd = syscall(SYS_pidfd_getfd, pidfd, server_fd, 0);
+    if (recv_fd == -1)
+        die("pidfd_getfd");
+
+#else
     // create local socket
     int data_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (data_socket == -1)
@@ -20,6 +37,10 @@ int main() {
 
     recv_fd = recvfd(data_socket);
     printf("received fd %d over socket\n", recv_fd);
+
+    close(data_socket);
+#endif
+
     print_underlying_filename(recv_fd);
 
     // read a bit from the file
@@ -32,8 +53,6 @@ int main() {
     }
     // closes fd too
     fclose(fp);
-
-    close(data_socket);
 
     return 0;
 }

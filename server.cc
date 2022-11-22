@@ -1,3 +1,6 @@
+#include <poll.h>
+
+
 #include "common.h"
 
 int main(int argc, char* argv[]) {
@@ -21,6 +24,14 @@ int main(int argc, char* argv[]) {
     }
     // do not fclose because that closes the fd too
 
+#ifdef USE_PIDFD
+    // write own pid and our fd to file
+    FILE* pidout = fopen("./pidout.txt", "w");
+    fprintf(pidout, "%d,%d", getpid(), send_fd);
+    fclose(pidout);
+
+    while(1){ usleep(1e5); };
+#else
     // create local socket
     int connection_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (connection_socket == -1)
@@ -49,6 +60,7 @@ int main(int argc, char* argv[]) {
 
     close(connection_socket);
     unlink(SOCKET_NAME);
+#endif
 
     return 0;
 }

@@ -17,6 +17,8 @@
 #define SOCKET_NAME "/tmp/ipctest.socket"
 #define BUFFER_SIZE 12
 
+#define USE_PIDFD
+
 
 /*
  * The following code is taken from man 2 seccomp_unotify
@@ -143,6 +145,7 @@ static void print_underlying_filename(int fd)
     char procfs_path[PATH_MAX];
     sprintf(procfs_path, "/proc/self/fd/%d", fd);
     char real_path[PATH_MAX];
+    /* readlink does not null-terminate */
     int nbytes = readlink(procfs_path, real_path, 1000);
     if (nbytes == -1)
         perror("readlink");
