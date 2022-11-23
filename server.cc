@@ -25,13 +25,15 @@ int main(int argc, char* argv[]) {
     // do not fclose because that closes the fd too
 
 #ifdef USE_PIDFD
+    fflush(fp);
     // write own pid and our fd to file
     FILE* pidout = fopen("./pidout.txt", "w");
     fprintf(pidout, "%d,%d", getpid(), send_fd);
     fclose(pidout);
 
     while(1){ usleep(1e5); };
-#else
+
+#else  // use socket
     // create local socket
     int connection_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (connection_socket == -1)

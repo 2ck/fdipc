@@ -4,7 +4,7 @@ LDFLAGS :=
 
 all: server client
 
-%: %.cc
+%: %.cc common.h
 	${CXX} ${CXXFLAGS} -o $@ $< ${LDFLAGS}
 
 clean:

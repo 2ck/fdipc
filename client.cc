@@ -21,7 +21,7 @@ int main() {
     if (recv_fd == -1)
         die("pidfd_getfd");
 
-#else
+#else  // use socket
     // create local socket
     int data_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (data_socket == -1)
@@ -51,7 +51,7 @@ int main() {
         getline(&line, &len, fp);
         printf("client: %s", line);
     }
-    // closes fd too
+    // also closes fd
     fclose(fp);
 
     return 0;
